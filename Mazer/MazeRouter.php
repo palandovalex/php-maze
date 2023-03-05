@@ -16,6 +16,8 @@ class MazeRouter{
   private Maze $maze;
   private array $route_nodes;
   private array $optimal_route;
+  public array $failed_route_nodes;
+  public bool $failed;
 
   
 
@@ -23,6 +25,8 @@ class MazeRouter{
   {
     $this->maze = $maze;
     $this->route_nodes = array();
+    $this->failed_route_nodes = array();
+    $this->failed = false;
   }
 
   function addRouteNode(Point $point){
@@ -61,10 +65,6 @@ class MazeRouter{
     return PointType::None;
   }
 
-  function __toString(){
-    return $this->maze->printWithRouter($this);
-  }
-
   function buildRoute(PathFinder $pathFinder){
     $nodes_count = count($this->route_nodes);
     $opt_route = array();
@@ -78,12 +78,21 @@ class MazeRouter{
     for($i=1;$i<count($this->route_nodes);$i++)
     {
       $node = $this->route_nodes[$i];
-      $route_part = $pathFinder->findPath(
-        $prev_node->hash(), $node->hash(), $graf
-      );
 
-      $opt_route = array_merge($opt_route, $route_part); 
-      $prev_node = $node;
+      try{
+        $route_part = $pathFinder->findPath(
+          $prev_node->hash(), $node->hash(), $graf
+        );
+
+        $opt_route = array_merge($opt_route, $route_part); 
+        $prev_node = $node;
+      }
+      catch(PathNotFound $e){//dont delete $e
+        $failed_route_nodes[]=$node;
+      }
+    }
+    if($prev_node !== end($this->route_nodes)){
+      $this->failed = true;
     }
 
     $this->optimal_route = $opt_route;
@@ -96,8 +105,9 @@ class MazeRouter{
     for($y=0;$y<$height;$y++){
       for($x=0;$x<$width;$x++){
         $p = new Point([$x,$y]);
-        if($this->_checkPoint($p))
-        $graf[($p->hash())] = $this->_getNextPoints($x,$y);
+        if($this->_checkPoint($p)){
+          $graf[($p->hash())] = $this->_getNextPoints($x,$y);
+        }
       }
     }
     return $graf;
@@ -109,9 +119,10 @@ class MazeRouter{
     $next_points = [];
     foreach($ways as $way){
       list($dx,$dy) = $way;
+
       $next_point = new Point([$x+$dx,$y+$dy]);
       if($this->_checkPoint($next_point)){
-        $cost = $this->maze->getValue($x,$y);
+        $cost = $this->maze->getPointValue($next_point);
         $next_points[]=[$cost, $next_point->hash()];
       }
     }

@@ -14,9 +14,8 @@ class DijkstraPathFinder implements PathFinder {
     return self::_dijkstra($start,$goal,$graf);  
   }
 
-
-
-  static function _dijkstra($start, $goal, $graf){
+  public $visited = null;
+  function _dijkstra($start, $goal, $graf){
     $graf = $graf;
 
     $queue = [[0, $start]];
@@ -25,7 +24,6 @@ class DijkstraPathFinder implements PathFinder {
 
     while(count($queue)){
 
-      self::_sortByCost($queue);
       list( ,$curr_node) = array_pop($queue);
       if($curr_node==$goal)
       {
@@ -33,15 +31,22 @@ class DijkstraPathFinder implements PathFinder {
       }
 
       $next_nodes = $graf[$curr_node];
-      foreach($next_nodes as $next_node){
-        list($neigh_cost, $neigh_node) = $next_node;
+      foreach($next_nodes as $next){
+        list($neigh_cost, $neigh_node) = $next;
+
+        if($curr_node == $neigh_node){
+          var_dump($next_nodes);
+          var_dump($curr_node);
+          var_dump($neigh_node);
+          throw new Exception();
+        }
+
         $new_cost = $cost_visited[$curr_node] + $neigh_cost;
 
-        $neigh_node;
-        if(!array_key_exists($neigh_node, $cost_visited) or 
-          $new_cost < $cost_visited[$neigh_node])
+        if((!array_key_exists($neigh_node, $cost_visited)) or 
+          ($new_cost < $cost_visited[$neigh_node]))
         {
-          $queue[]=[$new_cost,$neigh_node];
+          array_unshift($queue,[$new_cost,$neigh_node]);
           $cost_visited[$neigh_node] = $new_cost;
           $visited[$neigh_node] = $curr_node;
         }
@@ -51,33 +56,19 @@ class DijkstraPathFinder implements PathFinder {
       throw new PathNotFound();
     }
 
-
-
-    print('count visited - '.count($visited)."\n");
     $optimal_route = [$goal];
     while(end($optimal_route)!==$start){
-      $curr_node = end($optimal_route);
-      $next_nodes = $graf[$curr_node];
-      $cost_next_nodes = [];
-      foreach($next_nodes as $node){
-        list(,$node) = $node;
-        if(array_key_exists($node, $visited)){
-          $node_cost = $cost_visited[$node];
-          $cost_next_nodes[] = [$node_cost,$node];
-        }
-      }
-      $optimal_route[]=self::_getCheapestNode($cost_next_nodes);
+      $optimal_route[] = $visited[end($optimal_route)];
     }
+
+    $this->visited = $visited;
+
+
     return $optimal_route;
   }
 
-  static private function _getCheapestNode($nodes){
-    return min($nodes)[1];
-  }
-  
-  static private function _sortByCost($queue){
-    usort($queue, function($a,$b){
-      return -($a[0]-$b[0]);
-    });
+  static function visitedVizualise($visited){
+    sort($visited);
+    
   }
 }

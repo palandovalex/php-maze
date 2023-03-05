@@ -83,7 +83,6 @@ echo "computing optimal path...\n";
 $finder = new \Mazer\DijkstraPathFinder();
 $path = $maze_route->buildRoute($finder);
 
-echo "Optimal path is \033[94m1\033[0m: \n";
 $printer->print($maze_route);
 
 //echo $maze->__toString($path);

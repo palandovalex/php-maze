@@ -9,25 +9,6 @@ class Maze{
   const SHAPE = "invalide shape of maze data";
   const DATA_TYPE = 'Incorrect type of maze data elements';
 
-  const COLOR_OFF = "\033[0m";
-  const COLOR_CODES =array(
-    "\033[47,30m",
-    "\033[96m",
-    "\033[96m",
-    "\033[96m",
-    "\033[33m",
-    "\033[33m",
-    "\033[33m",
-    "\033[91m",
-    "\033[91m",
-    "\033[91m"
-  );
-  const COLOR_POINT = "\033[43m";
-  const COLOR_NODE = "\033[42m";
-  const COLOR_START_NODE = "\033[44m";
-  const COLOR_END_NODE = "\033[44m";
-
-
   public array $container;
   public int $width;
   public int $height;
@@ -60,65 +41,11 @@ class Maze{
   }
 
   function getValue($x,$y){
+    
     return $this->container[$y][$x];
   }
 
-
-  function __toString(){
-    $futter = '|'.str_repeat("-", $this->width).'|'."\n";
-    $result = $futter;
-
-    for($y=0;$y<count($this->container);$y++)
-    {
-      $result = $result . "|";
-
-      $line = $this->container[$y];
-      for($x=0;$x<count($line); $x++){
-        $e = $line[$x];
-        $code = self::COLOR_CODES[$e];
-        $result = $result . $code . 
-          $e . self::COLOR_OFF;
-      }
-      $result = $result . "|\n";
-    }
-    $result = $result . $futter;
-    return $result;
-  }
-
-
-
-  function printWithRouter(MazeRouter $router){
-    $futter = '|' . str_repeat("-", $this->width) . '|';
-    $result = $futter . "\n";
-
-    $pointsSet = $router->getPointsSet();
-    $nodesSet = $router->getNodesSet();
-
-    for($y=0;$y<count($this->container);$y++)
-    {
-      $result = $result . "|";
-
-      $line = $this->container[$y];
-      for($x=0;$x<count($line); $x++){
-        $e = $line[$x];
-        $pointHash = $x.','.$y;
-        $code = self::getColorCode($e,$pointsSet,$nodesSet,$pointHash);
-        $result = $result . $code . 
-          $e . self::COLOR_OFF;
-      }
-      $result = $result . "|\n";
-    }
-    $result = $result . $futter;
-    return $result;
-  }
-
-  static function getColorCode($element, $pointsSet, $nodesSet, $hash){
-    if($pointsSet[$hash]){
-      return self::COLOR_POINT; 
-    }
-    elseif($nodesSet[$hash]){
-      return self::COLOR_NODE;
-    }
-    return self::COLOR_CODES[$element];
+  function getPointValue($p){
+    return $this->container[$p->y][$p->x];
   }
 }
